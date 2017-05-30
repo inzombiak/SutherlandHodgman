@@ -220,47 +220,62 @@ void GridManager::MarkShape(const sf::Vector2f& mousePos, bool markAsClippingPla
 		return;
 
 	IShape* shape = 0;
-
 	if (m_currentShape.second == Concave)
 		shape = &m_concaveShapes[m_currentShape.first];
 	else
 		shape = &m_convexShapes[m_currentShape.first];
 
 	//Deselect shape
-	
-	//Set polygon
 	IShape* oldShape = 0;
+	if (m_currentShape == m_polygon)
+	{
+		if (m_polygon.second == Concave)
+			oldShape = &m_concaveShapes[m_polygon.first];
+		else
+			oldShape = &m_convexShapes[m_polygon.first];
+		m_polygon = NULL_SHAPE;
+	}
+	else if (m_currentShape == m_clipPlane)
+	{
+		oldShape = &m_convexShapes[m_clipPlane.first];
+		m_clipPlane = NULL_SHAPE;
+	}
+	if (oldShape != 0)
+	{
+		oldShape->Marked(false);
+		oldShape->Selected(false, mousePos);
+		oldShape->SetText("");
+	}
+	oldShape = 0;
 	if (!markAsClippingPlane)
 	{
-		
-		if (m_polygon.first != -1)
+		if (m_polygon != NULL_SHAPE)
 		{
 			if (m_polygon.second == Concave)
 				oldShape = &m_concaveShapes[m_polygon.first];
 			else
 				oldShape = &m_convexShapes[m_polygon.first];
 		}
+	
+
 		m_polygon = m_currentShape;
 		shape->SetFillColor(MARKED_POLYGON);
 		shape->Marked(true);
 	}
 	else
 	{
-		//Cant clip using a concave window
 		if (m_currentShape.second != Concave)
 		{
-			if (m_clipPlane.first != -1)
-			{
+			if (m_clipPlane != NULL_SHAPE)
 				oldShape = &m_convexShapes[m_clipPlane.first];
-			}
 
+			m_clipPlane = NULL_SHAPE;
 			m_clipPlane = m_currentShape;
 			shape->SetFillColor(MARKED_CLIPPINGPLANE);
 			shape->Marked(true);
 		}
 		
 	}
-
 	if (oldShape != 0)
 	{
 		oldShape->Marked(false);
